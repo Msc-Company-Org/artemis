@@ -1,0 +1,74 @@
+# Artemis — QLoRA fine-tuning config (illustrative reference values)
+# Base: mistralai/Mistral-7B-Instruct-v0.3
+# Task: B2B inbound lead qualification + next-action + reply drafting
+
+model:
+  base_model: mistralai/Mistral-7B-Instruct-v0.3
+  trust_remote_code: false
+  attn_implementation: flash_attention_2
+
+quantization:           # QLoRA 4-bit base
+  load_in_4bit: true
+  bnb_4bit_quant_type: nf4
+  bnb_4bit_use_double_quant: true
+  bnb_4bit_compute_dtype: bfloat16
+
+lora:
+  r: 16
+  lora_alpha: 32
+  lora_dropout: 0.05
+  bias: none
+  task_type: CAUSAL_LM
+  target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+    - gate_proj
+    - up_proj
+    - down_proj
+
+data:
+  train_file: data/train.jsonl       # full reference set (not distributed)
+  eval_file: data/val.jsonl
+  sample_file: data/sample.jsonl     # 10-12 illustrative rows in this repo
+  max_seq_len: 2048
+  prompt_field: conversation
+  response_fields: [qualification, reply]
+  mask_prompt_loss: true             # train only on the completion
+
+# 2-stage protocol (MSC Labs standard): smoke test -> full run
+stages:
+  smoke_test:
+    enabled: true
+    max_steps: 200
+    data_fraction: 0.01
+    purpose: validate schema, tokenization, loss curve, prompt format before paying for the full run
+  full_run:
+    num_train_epochs: 3
+
+training:
+  output_dir: outputs/artemis-lead-qual
+  per_device_train_batch_size: 4
+  gradient_accumulation_steps: 8     # effective batch size 32
+  learning_rate: 2.0e-4
+  lr_scheduler_type: cosine
+  warmup_ratio: 0.03
+  weight_decay: 0.0
+  optim: paged_adamw_8bit
+  bf16: true
+  gradient_checkpointing: true
+  max_grad_norm: 0.3
+  logging_steps: 10
+  eval_strategy: steps
+  eval_steps: 100
+  save_steps: 200
+  save_total_limit: 3
+  seed: 42
+
+eval:
+  baseline: gpt-4o
+  replay_set: data/replay_1000.jsonl
+  metrics: [qualification_f1, qualified_lead_rate, next_action_accuracy, reply_human_pref]
+
+# Reference compute: 1x A100 80GB, ~6.5h wall-clock for the full run.

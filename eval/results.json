@@ -1,0 +1,45 @@
+{
+  "model": "artemis-lead-qual",
+  "base_model": "mistralai/Mistral-7B-Instruct-v0.3",
+  "method": "QLoRA",
+  "task": "b2b-inbound-lead-qualification",
+  "baseline": "gpt-4o",
+  "disclaimer": "Illustrative reference results from the MSC Labs eval harness.",
+  "replay_set_size": 1000,
+  "class_balance": {
+    "actual_qualified": 420,
+    "actual_not_qualified": 580
+  },
+  "metrics": {
+    "qualification": {
+      "precision": {"gpt_4o": 0.84, "artemis": 0.91},
+      "recall_qualified_lead_rate": {"gpt_4o": 0.714, "artemis": 0.850},
+      "f1": {"gpt_4o": 0.86, "artemis": 0.93},
+      "accuracy": {"artemis": 0.902},
+      "qualified_lead_rate_relative_lift": 0.19
+    },
+    "next_action_accuracy": {"gpt_4o": 0.79, "artemis": 0.88},
+    "reply_human_pref_win_rate": {"artemis_vs_gpt_4o": 0.61, "n": 300, "cohen_kappa": 0.71}
+  },
+  "confusion_matrix_artemis": {
+    "true_positive": 357,
+    "false_negative": 63,
+    "false_positive": 35,
+    "true_negative": 545
+  },
+  "cost_per_1k_requests_usd": {
+    "gpt_4o": 5.00,
+    "artemis": 0.20,
+    "relative_cheaper": 25
+  },
+  "latency_ms": {
+    "p50": {"gpt_4o": 1180, "artemis": 540},
+    "p95": {"gpt_4o": 2400, "artemis": 910}
+  },
+  "training": {
+    "protocol": "2-stage (smoke_test -> full_run)",
+    "epochs": 3,
+    "hardware": "1x A100 80GB",
+    "wall_clock_hours": 6.5
+  }
+}
