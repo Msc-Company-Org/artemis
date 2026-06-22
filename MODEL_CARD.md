@@ -82,5 +82,5 @@ See [`eval/results.md`](eval/results.md) and [`eval/results.json`](eval/results.
 ---
 
 > Reference model by **MSC Labs** — done-for-you custom model training.
-> Want this for your task? → Book a free model audit: https://msc-labs-ai.vercel.app/assessment
+> Want this for your task? → Book a free model audit: https://labs.msccompany.com.br/assessment
 > Numbers are illustrative reference results from our standard eval harness.
